@@ -1,0 +1,27 @@
+//Получить пост по айди
+
+{
+  "query": "query GetPost($id: String!) { post(id: $id) { id title content authorId allowComments createdAt comments { id text authorId createdAt } } }",
+  "variables": {
+    "id": "id-1" // Укажите ID поста
+  }
+}
+
+//Получить все посты
+
+{
+  "query": "query { posts { id title content authorId allowComments createdAt } }"
+}
+
+// Создать пост
+
+{
+  "query": "mutation CreatePost($title: String!, $content: String!, $authorId: String!, $allowComments: Boolean!) { createPost(title: $title, content: $content, authorId: $authorId, allowComments: $allowComments) { id title content authorId allowComments createdAt } }",
+  "variables": {
+    "title": "My New Post",
+    "content": "This is the content of my new post.",
+    "authorId": "user-1",
+    "allowComments": true
+  }
+}
+
