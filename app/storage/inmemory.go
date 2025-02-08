@@ -88,7 +88,7 @@ func (s *InMemoryStorage) GetLatestComment(ctx context.Context, postId string) (
 
 	var lastComment *models.Comment
 	for _, comment := range s.comments {
-		if comment.PostID == postId {
+		if comment.PostID == postId && comment.ParentID == nil {
 			if lastComment == nil || comment.CreatedAt.After(lastComment.CreatedAt) {
 				lastComment = comment
 			}
