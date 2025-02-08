@@ -9,6 +9,7 @@ type Post struct {
 	AuthorID      string    `json:"authorId"`
 	AllowComments bool      `json:"allowComments"`
 	CreatedAt     time.Time `json:"createdAt"`
+	LastComment   *Comment  `json:"lastComment,omitempty"`
 }
 
 type Comment struct {

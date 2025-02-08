@@ -20,7 +20,7 @@ type Comment {
 type Query {
   posts: [Post!]!
   post(id: ID!): Post
-  comments(postId: ID!, first: Int, after: String): [Comment!]!
+  comments(id: ID!, after: String): [Comment]!
 }
 
 type Mutation {

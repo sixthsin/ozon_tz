@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"log"
 	"net/http"
@@ -27,17 +26,19 @@ func main() {
 	var store storage.Storage
 	switch *storageType {
 	case "inmemory":
-		log.Println("Initializing store...")
+		log.Println("Initializing in-memory store...")
 		store = storage.NewStorageInMemory()
-	case "postgres":
-		db, err := initPostgresDB()
-		if err != nil {
-			log.Fatalf("Failed to connect to database: %v", err)
-		}
-		store = store.NewStoragePostgres(db)
+	// case "postgres":
+	// 	log.Println("Initializing postgres store...")
+	// 	db, err := initPostgresDB()
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to connect to database: %v", err)
+	// 	}
+	// 	store = storage.NewStoragePostgres(db)
 	default:
 		log.Fatalf("Invalid storage type: %s", *storageType)
 	}
+
 	graph.SetStore(store)
 
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
@@ -75,19 +76,19 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("Error during shutdown: %v", err)
 	}
-	log.Println("Server stopped gracefully")
+	log.Println("Server stopped")
 }
 
-func initPostgresDB() (*sql.DB, error) {
-	dsn := "user=user password=password dbname=app_db sslmode=disable"
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
+// func initPostgresDB() (*sql.DB, error) {
+// 	dsn := "user=user password=password dbname=app_db sslmode=disable"
+// 	db, err := sql.Open("postgres", dsn)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+// 	if err := db.Ping(); err != nil {
+// 		return nil, err
+// 	}
 
-	return db, nil
-}
+// 	return db, nil
+// }

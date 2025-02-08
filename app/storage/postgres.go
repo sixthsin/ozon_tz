@@ -2,14 +2,17 @@ package storage
 
 import (
 	"database/sql"
+	"log"
 )
 
 type PostgresStorage struct {
-	Storage
 	db *sql.DB
 }
 
 func NewStoragePostgres(db *sql.DB) *PostgresStorage {
+	if db == nil {
+		log.Fatal("Database connection is nil")
+	}
 	return &PostgresStorage{db: db}
 }
 

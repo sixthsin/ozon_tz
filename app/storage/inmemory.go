@@ -4,15 +4,18 @@ import (
 	"context"
 	"errors"
 	"ozontz/app/models"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
 )
 
-const textLen = 2000
+const (
+	textLen       = 2000
+	commentsCount = 5
+)
 
 type InMemoryStorage struct {
-	Storage
 	mu        sync.Mutex
 	posts     map[string]*models.Post
 	comments  map[string]*models.Comment
@@ -34,7 +37,7 @@ func (s *InMemoryStorage) GetPosts(ctx context.Context) ([]*models.Post, error) 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	var posts []*models.Post
+	posts := make([]*models.Post, 5)
 	for _, post := range s.posts {
 		posts = append(posts, post)
 	}
@@ -97,10 +100,45 @@ func (s *InMemoryStorage) GetLatestComment(ctx context.Context, postId string) (
 	return lastComment, nil
 }
 
-// func (s *InMemoryStorage) GetComments(postID string, first *int, after *string) ([]*models.Comment, error) {
-// 	// Реализация пагинации комментариев
-// }
+func (s *InMemoryStorage) GetComments(ctx context.Context, postId string, after *string) ([]*models.Comment, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-// func (s *InMemoryStorage) GetLatestComment(postID string) (*models.Comment, error) {
-// 	// Реализация получения последнего комментария
-// }
+	var comments []*models.Comment
+	for _, comment := range s.comments {
+		if comment.PostID == postId {
+			comments = append(comments, comment)
+		}
+	}
+
+	sort.Slice(comments, func(i, j int) bool {
+		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
+	})
+
+	index := -1
+	if after != nil {
+
+		for i, comment := range comments {
+			if generateCursor(comment) == *after {
+				index = i
+				break
+			}
+		}
+		if index == -1 {
+			return nil, errors.New("invalid cursor")
+		}
+		if index != -1 {
+			comments = comments[index+1:]
+		}
+	} else {
+		if len(comments) > commentsCount {
+			comments = comments[:commentsCount]
+		}
+	}
+
+	return comments, nil
+}
+
+func generateCursor(comment *models.Comment) string {
+	return "cur-" + comment.ID
+}

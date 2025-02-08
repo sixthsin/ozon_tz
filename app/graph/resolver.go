@@ -16,26 +16,6 @@ func SetStore(s storage.Storage) {
 	store = s
 }
 
-func resolveGetPostsList(params graphql.ResolveParams) (interface{}, error) {
-	posts, err := store.GetPosts(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	return posts, nil
-}
-
-func resolveGetPost(params graphql.ResolveParams) (interface{}, error) {
-	id, ok := params.Args["id"].(string)
-	if !ok {
-		return nil, errors.New("invalid ID")
-	}
-	post, err := store.GetPostByID(context.Background(), id)
-	if err != nil {
-		return nil, err
-	}
-	return post, nil
-}
-
 func resolveCreatePost(params graphql.ResolveParams) (interface{}, error) {
 	title := params.Args["title"].(string)
 	content := params.Args["content"].(string)
@@ -50,6 +30,26 @@ func resolveCreatePost(params graphql.ResolveParams) (interface{}, error) {
 		CreatedAt:     time.Now(),
 	}
 	return store.CreatePost(context.Background(), post)
+}
+
+func resolveGetPost(params graphql.ResolveParams) (interface{}, error) {
+	id, ok := params.Args["id"].(string)
+	if !ok {
+		return nil, errors.New("invalid ID")
+	}
+	post, err := store.GetPostByID(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
+func resolveGetPostsList(params graphql.ResolveParams) (interface{}, error) {
+	posts, err := store.GetPosts(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return posts, nil
 }
 
 func resolveAddComment(params graphql.ResolveParams) (interface{}, error) {
@@ -117,4 +117,28 @@ func resolveGetLastComment(params graphql.ResolveParams) (interface{}, error) {
 	}
 
 	return lastComment, nil
+}
+
+func resolveGetComments(params graphql.ResolveParams) (interface{}, error) {
+	postId, ok := params.Args["postId"].(string)
+	if !ok || postId == "" {
+		return nil, errors.New("postId is required")
+	}
+
+	rawAfter := params.Args["after"]
+	var after *string
+
+	if rawAfter != nil {
+		a, ok := rawAfter.(string)
+		if ok && a != "" {
+			after = &a
+		}
+	}
+
+	comments, err := store.GetComments(context.Background(), postId, after)
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }

@@ -46,6 +46,14 @@ var QueryType = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: resolveGetPost,
 		},
+		"comments": &graphql.Field{
+			Type: graphql.NewList(commentType),
+			Args: graphql.FieldConfigArgument{
+				"postId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"after":  &graphql.ArgumentConfig{Type: graphql.String},
+			},
+			Resolve: resolveGetComments,
+		},
 	},
 })
 
