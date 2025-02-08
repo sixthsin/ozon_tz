@@ -10,7 +10,7 @@
 //Получить все посты
 
 {
-  "query": "query { posts { id title content authorId allowComments createdAt lastComment } }"
+  "query": "query { posts { id title content authorId allowComments createdAt } }"
 }
 
 // Создать пост
@@ -37,17 +37,12 @@
   }
 }
 
-{
-  "query": "query GetPostWithComments($postId: String!) { post(id: $postId) { id title content authorId allowComments createdAt comments(after: $after) { id text authorId parentId createdAt } } }",
-  "variables": {
-    "postId": "post-1"
-  }
-}
+// Получить список коментариев
 
 {
   "query": "query GetComments($postId: String!, $after: String) { comments(postId: $postId, after: $after) { id text authorId parentId createdAt } }",
   "variables": {
     "postId": "post-1",   // ID поста
-    "after": "cursor-comment-5" // Курсор после которого начать выборку (опционально)
+    "after": "cur-com-1"
   }
 }

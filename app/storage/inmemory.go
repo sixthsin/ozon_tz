@@ -16,14 +16,11 @@ const (
 )
 
 type InMemoryStorage struct {
-	mu        sync.Mutex
-	posts     map[string]*models.Post
-	comments  map[string]*models.Comment
-	idCounter int
-}
-
-func generateID(contentType string, counter int) string {
-	return contentType + strconv.Itoa(counter)
+	mu               sync.Mutex
+	posts            map[string]*models.Post
+	comments         map[string]*models.Comment
+	postIdCounter    int
+	commentIdCounter int
 }
 
 func NewStorageInMemory() *InMemoryStorage {
@@ -37,10 +34,16 @@ func (s *InMemoryStorage) GetPosts(ctx context.Context) ([]*models.Post, error) 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	posts := make([]*models.Post, 5)
+	var posts []*models.Post
+
 	for _, post := range s.posts {
 		posts = append(posts, post)
 	}
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].CreatedAt.After(posts[j].CreatedAt)
+	})
+
 	return posts, nil
 }
 
@@ -59,8 +62,8 @@ func (s *InMemoryStorage) CreatePost(ctx context.Context, post *models.Post) (*m
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.idCounter++
-	post.ID = generateID("post-", s.idCounter)
+	s.postIdCounter++
+	post.ID = generateID("post-", s.postIdCounter)
 	post.CreatedAt = time.Now()
 	s.posts[post.ID] = post
 	return post, nil
@@ -78,8 +81,8 @@ func (s *InMemoryStorage) AddComment(ctx context.Context, comment *models.Commen
 		return nil, errors.New("post not found")
 	}
 
-	s.idCounter++
-	comment.ID = generateID("com-", s.idCounter)
+	s.commentIdCounter++
+	comment.ID = generateID("com-", s.commentIdCounter)
 	comment.CreatedAt = time.Now()
 	s.comments[comment.ID] = comment
 	return comment, nil
@@ -112,7 +115,7 @@ func (s *InMemoryStorage) GetComments(ctx context.Context, postId string, after 
 	}
 
 	sort.Slice(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
+		return comments[i].CreatedAt.After(comments[j].CreatedAt)
 	})
 
 	index := -1
@@ -137,6 +140,10 @@ func (s *InMemoryStorage) GetComments(ctx context.Context, postId string, after 
 	}
 
 	return comments, nil
+}
+
+func generateID(contentType string, counter int) string {
+	return contentType + strconv.Itoa(counter)
 }
 
 func generateCursor(comment *models.Comment) string {
