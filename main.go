@@ -49,7 +49,6 @@ func main() {
 	}
 
 	http.Handle("/query", graph.GraphQLHandler(&schema))
-	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	log.Println("Initializing server...")
 

@@ -5,7 +5,7 @@ type Post {
   authorId: ID!
   allowComments: Boolean!
   createdAt: String!
-  comments(first: Int, after: String): [Comment!]!
+  lastComment: Comment
 }
 
 type Comment {

@@ -16,7 +16,7 @@ func SetStore(s storage.Storage) {
 	store = s
 }
 
-func resolvePosts(params graphql.ResolveParams) (interface{}, error) {
+func resolveGetPostsList(params graphql.ResolveParams) (interface{}, error) {
 	posts, err := store.GetPosts(context.Background())
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func resolvePosts(params graphql.ResolveParams) (interface{}, error) {
 	return posts, nil
 }
 
-func resolvePost(params graphql.ResolveParams) (interface{}, error) {
+func resolveGetPost(params graphql.ResolveParams) (interface{}, error) {
 	id, ok := params.Args["id"].(string)
 	if !ok {
 		return nil, errors.New("invalid ID")
@@ -37,10 +37,10 @@ func resolvePost(params graphql.ResolveParams) (interface{}, error) {
 }
 
 func resolveCreatePost(params graphql.ResolveParams) (interface{}, error) {
-	title, _ := params.Args["title"].(string)
-	content, _ := params.Args["content"].(string)
-	authorId, _ := params.Args["authorId"].(string)
-	allowComments, _ := params.Args["allowComments"].(bool)
+	title := params.Args["title"].(string)
+	content := params.Args["content"].(string)
+	authorId := params.Args["authorId"].(string)
+	allowComments := params.Args["allowComments"].(bool)
 
 	post := &models.Post{
 		Title:         title,
@@ -50,4 +50,71 @@ func resolveCreatePost(params graphql.ResolveParams) (interface{}, error) {
 		CreatedAt:     time.Now(),
 	}
 	return store.CreatePost(context.Background(), post)
+}
+
+func resolveAddComment(params graphql.ResolveParams) (interface{}, error) {
+	rawPostID := params.Args["postId"]
+	if rawPostID == nil {
+		return nil, errors.New("postId is required")
+	}
+	postId, ok := rawPostID.(string)
+	if !ok {
+		return nil, errors.New("postId must be a string")
+	}
+
+	rawParentID := params.Args["parentId"]
+	var parentID *string
+	if rawParentID != nil {
+		parentIdStr, ok := rawParentID.(string)
+		if !ok {
+			return nil, errors.New("parentId must be a string")
+		}
+		parentID = &parentIdStr
+	}
+
+	rawAuthorID := params.Args["authorId"]
+	if rawAuthorID == nil {
+		return nil, errors.New("authorId is required")
+	}
+	authorId, ok := rawAuthorID.(string)
+	if !ok {
+		return nil, errors.New("authorId must be a string")
+	}
+
+	rawText := params.Args["text"]
+	if rawText == nil {
+		return nil, errors.New("text is required")
+	}
+	text, ok := rawText.(string)
+	if !ok {
+		return nil, errors.New("text must be a string")
+	}
+
+	comment := &models.Comment{
+		PostID:    postId,
+		ParentID:  parentID,
+		AuthorID:  authorId,
+		Text:      text,
+		CreatedAt: time.Now(),
+	}
+
+	return store.AddComment(context.Background(), comment)
+}
+
+func resolveGetLastComment(params graphql.ResolveParams) (interface{}, error) {
+	post, ok := params.Source.(*models.Post)
+	if !ok {
+		return nil, errors.New("invalid source type")
+	}
+
+	if !post.AllowComments {
+		return nil, nil
+	}
+
+	lastComment, err := store.GetLatestComment(context.Background(), post.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return lastComment, nil
 }

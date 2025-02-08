@@ -1,9 +1,9 @@
 //Получить пост по айди
 
 {
-  "query": "query GetPost($id: String!) { post(id: $id) { id title content authorId allowComments createdAt comments { id text authorId createdAt } } }",
+  "query": "query GetPost($id: String!) { post(id: $id) { id title content authorId allowComments createdAt lastComment { id text authorId createdAt } } }",
   "variables": {
-    "id": "id-1" // Укажите ID поста
+    "id": "post-1" // Укажите ID поста
   }
 }
 
@@ -22,6 +22,18 @@
     "content": "This is the content of my new post.",
     "authorId": "user-1",
     "allowComments": true
+  }
+}
+
+// Создать коментарий
+
+{
+  "query": "mutation AddComment($postId: String!, $parentId: String, $authorId: String!, $text: String!) { addComment(postId: $postId, parentId: $parentId, authorId: $authorId, text: $text) { id postId parentId authorId text createdAt } }",
+  "variables": {
+    "postId": "post-1",
+    "parentId": null,
+    "authorId": "user-2",
+    "text": "Test comment"
   }
 }
 

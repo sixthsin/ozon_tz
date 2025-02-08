@@ -13,7 +13,10 @@ var postType = graphql.NewObject(graphql.ObjectConfig{
 		"authorId":      &graphql.Field{Type: graphql.String},
 		"allowComments": &graphql.Field{Type: graphql.Boolean},
 		"createdAt":     &graphql.Field{Type: graphql.String},
-		"comments":      &graphql.Field{Type: graphql.NewList(commentType)},
+		"lastComment": &graphql.Field{
+			Type:    commentType,
+			Resolve: resolveGetLastComment,
+		},
 	},
 })
 
@@ -34,14 +37,14 @@ var QueryType = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		"posts": &graphql.Field{
 			Type:    graphql.NewList(postType),
-			Resolve: resolvePosts,
+			Resolve: resolveGetPostsList,
 		},
 		"post": &graphql.Field{
 			Type: postType,
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{Type: graphql.String},
 			},
-			Resolve: resolvePost,
+			Resolve: resolveGetPost,
 		},
 	},
 })
@@ -58,6 +61,16 @@ var MutationType = graphql.NewObject(graphql.ObjectConfig{
 				"allowComments": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.Boolean)},
 			},
 			Resolve: resolveCreatePost,
+		},
+		"addComment": &graphql.Field{
+			Type: commentType,
+			Args: graphql.FieldConfigArgument{
+				"postId":   &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"parentId": &graphql.ArgumentConfig{Type: graphql.String},
+				"authorId": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+				"text":     &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+			},
+			Resolve: resolveAddComment,
 		},
 	},
 })
