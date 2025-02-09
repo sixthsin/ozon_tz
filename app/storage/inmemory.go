@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-const (
-	textLen       = 2000
-	commentsCount = 5
-)
-
 type InMemoryStorage struct {
 	mu               sync.Mutex
 	posts            map[string]*models.Post
@@ -64,7 +59,7 @@ func (s *InMemoryStorage) CreatePost(ctx context.Context, post *models.Post) (*m
 
 	s.postIdCounter++
 	post.ID = generateID("post-", s.postIdCounter)
-	post.CreatedAt = time.Now()
+	post.CreatedAt = time.Now().UTC()
 	s.posts[post.ID] = post
 	return post, nil
 }
@@ -83,7 +78,7 @@ func (s *InMemoryStorage) AddComment(ctx context.Context, comment *models.Commen
 
 	s.commentIdCounter++
 	comment.ID = generateID("com-", s.commentIdCounter)
-	comment.CreatedAt = time.Now()
+	comment.CreatedAt = time.Now().UTC()
 	s.comments[comment.ID] = comment
 	return comment, nil
 }

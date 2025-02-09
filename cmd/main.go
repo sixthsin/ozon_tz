@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/graphql-go/graphql"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -28,13 +29,14 @@ func main() {
 	case "inmemory":
 		log.Println("Initializing in-memory store...")
 		store = storage.NewStorageInMemory()
-	// case "postgres":
-	// 	log.Println("Initializing postgres store...")
-	// 	db, err := initPostgresDB()
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to connect to database: %v", err)
-	// 	}
-	// 	store = storage.NewStoragePostgres(db)
+	case "postgres":
+		log.Println("Initializing postgres store...")
+		db, err := storage.InitPostgresDB()
+		if err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
+		store = storage.NewStoragePostgres(db)
+		log.Println("Connectet to db")
 	default:
 		log.Fatalf("Invalid storage type: %s", *storageType)
 	}
@@ -78,17 +80,3 @@ func main() {
 	}
 	log.Println("Server stopped")
 }
-
-// func initPostgresDB() (*sql.DB, error) {
-// 	dsn := "user=user password=password dbname=app_db sslmode=disable"
-// 	db, err := sql.Open("postgres", dsn)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if err := db.Ping(); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return db, nil
-// }

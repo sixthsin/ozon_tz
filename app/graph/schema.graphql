@@ -1,33 +1,29 @@
 type Post {
-  id: ID!
+  id: String!
   title: String!
   content: String!
-  authorId: ID!
+  authorId: String!
   allowComments: Boolean!
   createdAt: String!
   lastComment: Comment
 }
 
 type Comment {
-  id: ID!
-  postId: ID!
-  parentId: ID
-  authorId: ID!
+  id: String!
+  postId: String!
+  parentId: String
+  authorId: String!
   text: String!
   createdAt: String!
 }
 
 type Query {
   posts: [Post!]!
-  post(id: ID!): Post
-  comments(id: ID!, after: String): [Comment]!
+  post(id: String!): Post
+  comments(id: String!, after: String): [Comment]!
 }
 
 type Mutation {
-  createPost(title: String!, content: String!, authorId: ID!, allowComments: Boolean!): Post!
-  addComment(postId: ID!, parentId: ID, authorId: ID!, text: String!): Comment!
-}
-
-type Subscription {
-  newComment(postId: ID!): Comment!
+  createPost(title: String!, content: String!, authorId: String!, allowComments: Boolean!): Post!
+  addComment(postId: String!, parentId: String, authorId: String!, text: String!): Comment!
 }
