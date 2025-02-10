@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"ozontz/app/models"
-	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
@@ -16,14 +14,6 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
-
-func getMigrationDir() string {
-	_, filename, _, _ := runtime.Caller(0)
-	baseDir := filepath.Dir(filepath.Dir(filename))
-	migrationDir := filepath.Join(baseDir, "../migrations")
-
-	return migrationDir
-}
 
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
 	ctx := context.Background()

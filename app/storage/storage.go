@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"ozontz/app/models"
+	"path/filepath"
+	"runtime"
 )
 
 const (
@@ -22,6 +24,14 @@ type Storage interface {
 	AddComment(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	GetComments(ctx context.Context, postId string, after *string) ([]*models.Comment, error)
 	GetLatestComment(ctx context.Context, postId string) (*models.Comment, error)
+}
+
+func getMigrationDir() string {
+	_, filename, _, _ := runtime.Caller(0)
+	baseDir := filepath.Dir(filepath.Dir(filename))
+	migrationDir := filepath.Join(baseDir, "../migrations")
+
+	return migrationDir
 }
 
 func InitPostgresDB() (*sql.DB, error) {
@@ -59,7 +69,7 @@ func InitPostgresDB() (*sql.DB, error) {
 	}
 	log.Println("Database connection established")
 
-	migrationDir := "./migrations"
+	migrationDir := getMigrationDir()
 	store := NewStoragePostgres(db)
 	if err := store.ApplyMigrations(migrationDir); err != nil {
 		return nil, fmt.Errorf("failed to apply migrations: %w", err)
