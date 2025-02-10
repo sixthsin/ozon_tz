@@ -82,7 +82,7 @@ func (s *PostgresStorage) CreatePost(ctx context.Context, post *models.Post) (*m
         RETURNING id, title, content, author_id, allow_comments, created_at
     `
 
-	post.ID = generateId()
+	post.ID = generateId("post-")
 	post.CreatedAt = time.Now().UTC()
 
 	err := s.db.QueryRowContext(ctx, query, post.ID, post.Title, post.Content, post.AuthorID, post.AllowComments, post.CreatedAt).Scan(
@@ -106,7 +106,7 @@ func (s *PostgresStorage) AddComment(ctx context.Context, comment *models.Commen
         RETURNING id, post_id, parent_id, author_id, text, created_at
     `
 
-	comment.ID = generateId()
+	comment.ID = generateId("com-")
 	comment.CreatedAt = time.Now().UTC()
 
 	var parentId sql.NullString
@@ -121,10 +121,6 @@ func (s *PostgresStorage) AddComment(ctx context.Context, comment *models.Commen
 	if err != nil {
 		return nil, err
 	}
-
-	// // Уведомляем подписчиков о новом комментарии
-	// s.NotifySubscribers(comment.PostID, comment)
-
 	return comment, nil
 }
 
@@ -222,6 +218,6 @@ func (s *PostgresStorage) ApplyMigrations(migrationDir string) error {
 	return nil
 }
 
-func generateId() string {
-	return "id-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+func generateId(contentType string) string {
+	return contentType + strconv.FormatInt(time.Now().UnixNano(), 10)
 }
